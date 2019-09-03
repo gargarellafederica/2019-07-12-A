@@ -5,8 +5,11 @@
 package it.polito.tdp.food;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.food.model.Food;
+import it.polito.tdp.food.model.InComune;
 import it.polito.tdp.food.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -41,7 +44,7 @@ public class FoodController {
     private Button btnSimula; // Value injected by FXMLLoader
 
     @FXML // fx:id="boxFood"
-    private ComboBox<?> boxFood; // Value injected by FXMLLoader
+    private ComboBox<Food> boxFood; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
@@ -49,14 +52,51 @@ public class FoodController {
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Creazione grafo...");
+    	String porzione=txtPorzioni.getText().trim();
+    	if(porzione.length()==0) {
+    		txtResult.appendText("Inserire un valore!");
+    		return;
+    	} else {
+    		if(!porzione.matches("[0-9]")) {
+    			txtResult.appendText("Carattere non corretto: Inserire un valore numerico!\n");
+    			return;
+    		}
+    	}
+    	int porz=Integer.parseInt(porzione);
+    	this.model.creagrafo(porz);
+    	
+    	txtResult.appendText("Grafo creato ha " + this.model.getnvertici()+ " vertici e " + this.model.getnarchi()+ " archi\n");
+    	
+    	boxFood.getItems().addAll(this.model.getvertici());
+    	txtResult.appendText("numero vertici nel box: "+ this.model.getvertici().size());
+
     }
     
     @FXML
     void doCalorie(ActionEvent event) {
     	txtResult.clear();
-    	txtResult.appendText("Analisi calorie...");
-    }
+    	
+    	if(boxFood.getValue()==null) {
+    		txtResult.appendText("Selezionare un valore!\n");
+    		return;
+    		}
+    	Food ciboscelto= boxFood.getValue();
+    	txtResult.appendText("Cibi con calorie maggiori per " + ciboscelto+ " sono: \n");
+    	
+    	List<InComune> caloriemax=this.model.getcaloriemax(ciboscelto);
+    	int i=0;
+    	Food ciborisultato=null;
+		for( InComune c: caloriemax) {
+			while(i<5) {
+				ciborisultato=this.model.prendivicino(ciboscelto, c);
+				if(ciborisultato!=null) {
+					txtResult.appendText(i+") " + ciborisultato.toString());
+	    			i++;
+				}
+			}
+    	}
+     }
+    	
 
     @FXML
     void doSimula(ActionEvent event) {
